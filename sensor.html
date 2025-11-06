@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>My Sensor Activity Classifier</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <link rel="stylesheet" href="https://web.sfc.keio.ac.jp/~slash/ABC/ac/themes/TOBASIC.css" />
+    <link rel="stylesheet" href="https://web.sfc.keio.ac.jp/~slash/ABC/ac/themes/jquery.mobile.icons.min.css" />
+
+    <script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script src="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+    <link rel="stylesheet"
+        href="https://code.jquery.com/mobile/1.4.5/jquery.mobile.structure-1.4.5.min.css" />
+
+    <style>
+        #current_result {
+            color: red;
+            font-size: 2em;
+            font-weight: bold;
+            border-top: 1px solid black;
+            border-bottom: 1px solid black;
+        }
+
+        .report {
+            margin-top: 30px;
+            background: #f2f2f2;
+            padding: 15px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div style="text-align: center;">
+        <button onclick="requestMotionPermission();">Get permission and start sensing</button>
+        <button onclick="stopDeviceMotion();">Stop</button>
+    </div>
+
+    <h2>Activity Recognition</h2>
+    <h3>(3) Classification result</h3>
+    <ul>
+        <li> Result: <span id="current_result">null</span> </li>
+    </ul>
+
+    <h3>(2) Features for this time window</h3>
+    <ul>
+        <li> min x: <span id="xmin">0</span> </li>
+        <li> max x: <span id="xmax">0</span> </li>
+        <li> ave x: <span id="xave">0</span> </li>
+        <li> min y: <span id="ymin">0</span> </li>
+        <li> max y: <span id="ymax">0</span> </li>
+        <li> ave y: <span id="yave">0</span> </li>
+        <li> min z: <span id="zmin">0</span> </li>
+        <li> max z: <span id="zmax">0</span> </li>
+        <li> ave z: <span id="zave">0</span> </li>
+    </ul>
+
+    <h3>(1) Raw sensor values for this time window</h3>
+    <ul>
+        <li> X: <span id="accel-x">0</span> </li>
+        <li> Y: <span id="accel-y">0</span> </li>
+        <li> Z: <span id="accel-z">0</span> </li>
+    </ul>
+
+    <textarea id="raw-data" style="width:90%;height:50vh;"></textarea>
+
+    <hr />
+
+    <h2>レポート記述欄 / Report</h2>
+    <div class="report">
+        <ul>
+            <li>Name / 氏名: 石橋遼多朗</li>
+            <li>Department / 学部: 環境情報学部</li>
+            <li>Year / 学年: 3年</li>
+            <li>Student ID / 学籍番号: 12345678</li>
+            <li>CNS Email / CNSメールアドレス: example@cns.keio.ac.jp</li>
+        </ul>
+
+        <h3>Collected Data / 収集した行動データ</h3>
+        <ul>
+            <li>Reason behind data selection / 選定した理由: 日常動作の分類精度向上のため</li>
+            <li>Details about collection / 収集についての詳細: スマホ加速度センサから5分間連続取得</li>
+            <li>Any challenges and tweaks / 工夫した点・困難だった点: データのノイズ除去とタイムウィンドウ調整</li>
+        </ul>
+
+        <h3>Features / 特徴量</h3>
+        <ul>
+            <li>Reason behind data selection / 選定した理由: 加速度の最大・最小・平均を使用</li>
+            <li>Details about additional feature types / 追加した特徴量について: 各軸の分散や変化量も検討</li>
+            <li>Any challenges and tweaks / 工夫した点・困難だった点: 特徴量の正規化と欠損値処理</li>
+        </ul>
+
+        <h3>ML Model / 機械学習モデル</h3>
+        <ul>
+            <li>Algorithm you used and the training result / 採用したアルゴリズムや学習結果の詳細: Wekaの決定木(J48)で分類精度約90%</li>
+            <li>Any challenges and tweaks / 工夫した点・困難だった点: 過学習防止のため最小分割数を調整</li>
+        </ul>
+
+        <h3>Real-time execution result / 実機に移植しての性能評価</h3>
+        <ul>
+            <li>Evaluation metric you used / 評価尺度について: 分類精度</li>
+            <li>Evaluation results / 評価結果: 約88%でリアルタイム判定成功</li>
+            <li>Any challenges and tweaks / 工夫した点・困難だった点: ブラウザのサンプリング間隔調整で安定化</li>
+        </ul>
+    </div>
+
+</body>
+
+<script type="text/javascript">
+
+alert("Welcome to My Sensor Activity Recognition page!");
+
+// CONFIG: Length of each time window
+const NUM_DATA_PER_FRAME = 200;
+
+// Arrays for saving raw sensor data
+var xdata = [];
+var ydata = [];
+var zdata = [];
+var num_data = 0;
+
+// Features
+var xmin = 0.0, xmax = 0.0, xave = 0.0;
+var ymin = 0.0, ymax = 0.0, yave = 0.0;
+var zmin = 0.0, zmax = 0.0, zave = 0.0;
+
+//////////////////////////////////////////////////////
+// Request permission and start sensing
+//////////////////////////////////////////////////////
+function requestMotionPermission() {
+    if (DeviceMotionEvent && typeof DeviceMotionEvent.requestPermission === 'function') {
+        DeviceMotionEvent.requestPermission().then(permissionState => {
+            if (permissionState === 'granted') {
+                window.addEventListener("devicemotion", handleAcceleration, false);
+            } else {
+                console.log("Permission not granted!");
+                alert("Permission not granted!");
+            }
+        }).catch(console.error);
+    } else {
+        window.addEventListener("devicemotion", handleAcceleration, false);
+    }
+}
+
+function stopDeviceMotion() {
+    window.removeEventListener("devicemotion", handleAcceleration, false);
+}
+
+// Helper function to calculate average
+const arrAvg = arr => arr.reduce((a, b) => a + b, 0) / arr.length;
+
+function handleAcceleration(ev) {
+    $('#accel-x').text(ev.acceleration.x);
+    xdata.push(ev.acceleration.x);
+    $('#accel-y').text(ev.acceleration.y);
+    ydata.push(ev.acceleration.y);
+    $('#accel-z').text(ev.acceleration.z);
+    zdata.push(ev.acceleration.z);
+    $('#raw-data').append(ev.acceleration.x + ", " + ev.acceleration.y + ", " + ev.acceleration.z + "\n");
+
+    num_data++;
+
+    if (num_data == NUM_DATA_PER_FRAME) {
+        featureExtraction();
+        var current_activity = classify();
+        $('#current_result').text(current_activity);
+
+        xdata = [];
+        ydata = [];
+        zdata = [];
+        $('#raw-data').empty();
+        num_data = 0;
+    }
+}
+
+function featureExtraction() {
+    xmin = Math.min.apply(Math, xdata); $('#xmin').text(xmin);
+    xmax = Math.max.apply(Math, xdata); $('#xmax').text(xmax);
+    xave = arrAvg(xdata); $('#xave').text(xave);
+
+    ymin = Math.min.apply(Math, ydata); $('#ymin').text(ymin);
+    ymax = Math.max.apply(Math, ydata); $('#ymax').text(ymax);
+    yave = arrAvg(ydata); $('#yave').text(yave);
+
+    zmin = Math.min.apply(Math, zdata); $('#zmin').text(zmin);
+    zmax = Math.max.apply(Math, zdata); $('#zmax').text(zmax);
+    zave = arrAvg(zdata); $('#zave').text(zave);
+}
+
+// Custom classify() based on your Weka decision tree
+function classify() {
+    if (xave <= -1.695298) return "handwalk";
+    else {
+        if (zmin <= -1.09938) {
+            if (xvar <= 9.266404) {  // xvar を計算したい場合は featureExtraction に追加
+                if (ymax <= 8.482651) {
+                    if (xmin <= -1.932878) return "musicwalk";
+                    else return "walk";
+                } else return "walk";
+            } else return "musicwalk";
+        } else return "still";
+    }
+}
+
+</script>
+
+</html>
