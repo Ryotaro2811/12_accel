@@ -74,29 +74,29 @@
         <ul>
             <li>Name / 氏名: 石橋遼多朗</li>
             <li>Department / 学部: 環境情報学部</li>
-            <li>Year / 学年: 3年</li>
-            <li>Student ID / 学籍番号: 12345678</li>
-            <li>CNS Email / CNSメールアドレス: example@cns.keio.ac.jp</li>
+            <li>Year / 学年: 2年</li>
+            <li>Student ID / 学籍番号: 72440549</li>
+            <li>CNS Email / CNSメールアドレス: t24054ri@cns.keio.ac.jp</li>
         </ul>
 
         <h3>Collected Data / 収集した行動データ</h3>
         <ul>
-            <li>Reason behind data selection / 選定した理由: 日常動作の分類精度向上のため</li>
-            <li>Details about collection / 収集についての詳細: スマホ加速度センサから5分間連続取得</li>
-            <li>Any challenges and tweaks / 工夫した点・困難だった点: データのノイズ除去とタイムウィンドウ調整</li>
+            <li>Reason behind data selection / 選定した理由: 作った後に、普段自分がする行動で本当にセンシングできるのか試してみたかったため。</li>
+            <li>Details about collection / 収集についての詳細: [still,スマホを持ちながら歩く,散歩,音楽聞きながら歩く]各2分</li>
+            <li>Any challenges and tweaks / 工夫した点・困難だった点: 自分が普段から低電力モードにしていたせいで行動によってデータの細かさが異なってしまい、1.2週間苦戦しました(最終的に原因が分かり、しっかりとデータをとることができました。)。データの採取をいかに平等にやるかということに苦戦しました。</li>
         </ul>
 
         <h3>Features / 特徴量</h3>
         <ul>
             <li>Reason behind data selection / 選定した理由: 加速度の最大・最小・平均を使用</li>
             <li>Details about additional feature types / 追加した特徴量について: 各軸の分散や変化量も検討</li>
-            <li>Any challenges and tweaks / 工夫した点・困難だった点: 特徴量の正規化と欠損値処理</li>
+            <li>Any challenges and tweaks / 工夫した点・困難だった点: 3秒ごとの特徴量分析に大変苦戦しました。</li>
         </ul>
 
         <h3>ML Model / 機械学習モデル</h3>
         <ul>
-            <li>Algorithm you used and the training result / 採用したアルゴリズムや学習結果の詳細: Wekaの決定木(J48)で分類精度約90%</li>
-            <li>Any challenges and tweaks / 工夫した点・困難だった点: 過学習防止のため最小分割数を調整</li>
+            <li>Algorithm you used and the training result / 採用したアルゴリズムや学習結果の詳細: Wekaの決定木(J48)で分類精度約94%</li>
+            <li>Any challenges and tweaks / 工夫した点・困難だった点: </li>
         </ul>
 
         <h3>Real-time execution result / 実機に移植しての性能評価</h3>
@@ -208,3 +208,4 @@ function classify() {
 </script>
 
 </html>
+
