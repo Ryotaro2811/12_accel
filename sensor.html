@@ -95,13 +95,13 @@
 
         <h3>ML Model / 機械学習モデル</h3>
         <ul>
-            <li>Algorithm you used and the training result / 採用したアルゴリズムや学習結果の詳細: Wekaの決定木(J48)で分類精度約94%</li>
-            <li>Any challenges and tweaks / 工夫した点・困難だった点: </li>
+            <li>Algorithm you used and the training result / 採用したアルゴリズムや学習結果の詳細: Wekaの決定木(J48)を用いて分類を行い、学習データに対して約94%の分類精度を得ました。決定木を選択した理由は、特徴量の影響が可視化され、モデルの解釈性が高いためです。</li>
+            <li>Any challenges and tweaks / 工夫した点・困難だった点:機械学習をかけた後の読みとりが難しかったです。 </li>
         </ul>
 
         <h3>Real-time execution result / 実機に移植しての性能評価</h3>
         <ul>
-            <li>Evaluation metric you used / 評価尺度について: 分類精度</li>
+            <li>Evaluation metric you used / 評価尺度について: ブラウザ上でリアルタイムに推論を行い、推定行動と実際の行動が一致している割合を分類精度として評価しました</li>
             <li>Evaluation results / 評価結果: 約88%でリアルタイム判定成功</li>
             <li>Any challenges and tweaks / 工夫した点・困難だった点: ブラウザのサンプリング間隔調整で安定化</li>
         </ul>
@@ -208,4 +208,5 @@ function classify() {
 </script>
 
 </html>
+
 
